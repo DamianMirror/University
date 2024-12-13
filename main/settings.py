@@ -28,7 +28,7 @@ AUTHENTICATION_BACKENDS = [
 SECRET_KEY = 'django-insecure-t*!-e@n1mcu5_za&b69(kwsmmhc=f)weiwdn+%n%uy28cv30*4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
