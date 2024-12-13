@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Уроки{% endblock %}
+
+{% block content %}
+
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <label class="input-group-text" for="group-select">Оберіть групу:</label>
+        <select class="form-select" id="group-select" name="group_id" onchange="window.location.href=this.options[this.selectedIndex].getAttribute('data-url')">
+            <option value="" disabled selected>Оберіть групу</option>
+            {% for group in groups %}
+            <option
+                value="{{ group.id }}"
+                data-url="{% url 'lessons_by_group' group.id %}"
+                {% if group.id == current_group_id %}selected{% endif %}>
+                {{ group.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+
+{% if group %}
+<h2 class="text-center mb-4">Уроки для групи {{ group.name }}</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>День тижня</th>
+            <th>Номер уроку</th>
+            <th>Час</th>
+            <th>Предмет</th>
+            <th>Викладач</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lesson in lessons %}
+        <tr>
+            <td>
+                {% if lesson.week_day == 1 %} Понеділок
+                {% elif lesson.week_day == 2 %} Вівторок
+                {% elif lesson.week_day == 3 %} Середа
+                {% elif lesson.week_day == 4 %} Четвер
+                {% elif lesson.week_day == 5 %} П'ятниця
+                {% elif lesson.week_day == 6 %} Субота
+                {% elif lesson.week_day == 7 %} Неділя
+                {% endif %}
+            </td>
+            <td>{{ lesson.time_schedule_lesson_number }}</td>
+            <td>{{ lesson.time_schedule.start_time }} - {{ lesson.time_schedule.end_time }}</td>
+            <td>{{ lesson.subject.name }}</td>
+            <td>{{ lesson.teacher.user.name }} {{ lesson.teacher.user.surname }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">Немає уроків для цієї групи</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-center">Оберіть групу, щоб переглянути уроки.</p>
+{% endif %}
+
+<a href="{% url 'home' %}" class="btn btn-primary">На головну</a>
+{% endblock %}

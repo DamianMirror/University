@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Головна{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">Головна сторінка</h1>
+<div class="d-flex flex-wrap justify-content-center">
+    <a href="{% url 'get_all_students' %}" class="btn btn-primary me-3 mb-2">Список студентів</a>
+    <a href="{% url 'get_all_teachers' %}" class="btn btn-success me-3 mb-2">Список викладачів</a>
+    <a href="{% url 'get_all_time_schedules' %}" class="btn btn-light me-3 mb-2">Розклад</a>
+    <a href="{% url 'lessons_by_group' group_id=1 %}" class="btn btn-info me-3 mb-2">Уроки за групою</a>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-success me-3 mb-2">Plotly Дашборд</a>
+</div>
+
+<div class="mt-4">
+    <div class="row justify-content-center" id="weather-container"></div>
+</div>
+
+<div class="mt-4">
+    <div id="news-container">
+        <p>Завантаження новин...</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const weatherApiKey = '4f5b98e085d8f8495ac99acfd1f488f2'; // Замініть на свій ключ OpenWeatherMap API
+    const newsApiKey = 'pub_62083149bb2af25cbc48bf4c9680bb9b28f1f'; // Замініть на свій ключ NewsData API
+
+    // --- Погода ---
+    const cities = [
+        { name: 'Lviv', id: 'lviv' },
+        { name: 'Kyiv', id: 'kyiv' },
+        { name: 'Odesa', id: 'odesa' },
+    ];
+
+    const weatherContainer = document.getElementById('weather-container');
+
+    cities.forEach(city => {
+        const card = document.createElement('div');
+        card.className = 'col-md-4';
+        card.innerHTML = `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title" id="weather-${city.id}-city">${city.name}</h5>
+                    <p class="card-text" id="weather-${city.id}-temp"></p>
+                    <p class="card-text" id="weather-${city.id}-description"></p>
+                </div>
+            </div>`;
+        weatherContainer.appendChild(card);
+
+        axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city.name}&appid=${weatherApiKey}&units=metric`)
+            .then(response => {
+                const data = response.data;
+                document.getElementById(`weather-${city.id}-city`).textContent = `${data.name}, ${data.sys.country}`;
+                document.getElementById(`weather-${city.id}-temp`).textContent = `Температура: ${data.main.temp.toFixed(1)}°C`;
+                document.getElementById(`weather-${city.id}-description`).textContent = `Опис: ${data.weather[0].description}`;
+            })
+            .catch(error => {
+                console.error(`Помилка при отриманні погоди для ${city.name}:`, error);
+                document.getElementById(`weather-${city.id}-city`).textContent = `${city.name}: Помилка завантаження`;
+            });
+    });
+
+    // --- Новини ---
+    const newsContainer = document.getElementById('news-container');
+
+    axios.get(`https://newsdata.io/api/1/news?apikey=${newsApiKey}&country=ua&language=uk`) // Параметри запиту
+        .then(response => {
+            const articles = response.data.results;
+            newsContainer.innerHTML = ''; // Очищаємо контейнер перед додаванням нових новин
+
+            if (articles && articles.length > 0) { // Перевірка на наявність новин
+                articles.forEach(article => {
+                    const articleDiv = document.createElement('div');
+                    articleDiv.className = "card mb-3";
+                    articleDiv.innerHTML = `
+                        <div class="card-body">
+                            <h5 class="card-title">${article.title || 'Без заголовка'}</h5>
+                            <p class="card-text">${article.description || 'Без опису'}</p>
+                            ${article.image_url ? `<img src="${article.image_url}" class="card-img-top" alt="${article.title || 'Зображення новини'}" loading="lazy">`: ''}
+                            <a href="${article.link}" class="btn btn-primary" target="_blank" rel="noopener noreferrer" style="margin-top: 20px">Читати далі</a>
+                        </div>`;
+                    newsContainer.appendChild(articleDiv);
+                });
+            } else {
+                newsContainer.innerHTML = '<p>Немає новин для відображення.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Помилка при отриманні новин:', error);
+            newsContainer.innerHTML = '<p>Помилка при завантаженні новин.</p>';
+        });
+</script>
+
+{% endblock %}
