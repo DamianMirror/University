@@ -1,6 +1,11 @@
 from pathlib import Path
+
+from django.conf.global_settings import CSRF_TRUSTED_ORIGINS
 from dotenv import load_dotenv
 import os
+import pymysql
+
+pymysql.install_as_MySQLdb()
 
 load_dotenv()
 
@@ -28,9 +33,8 @@ AUTHENTICATION_BACKENDS = [
 SECRET_KEY = 'django-insecure-t*!-e@n1mcu5_za&b69(kwsmmhc=f)weiwdn+%n%uy28cv30*4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -58,7 +62,6 @@ STATICFILES_FINDERS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',  # Відповідальний за сесії
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,8 +81,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-
 
 
 AUTH_USER_MODEL = 'university.User'  # Замість 'your_app_name' використайте фактичну назву вашого додатку
@@ -113,10 +114,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('NAME'),
-        'USER' : os.getenv('USER'),
+        'USER' : os.getenv('USERNAME'),
         'PASSWORD' : os.getenv('PASSWORD'),
         'HOST' : os.getenv('HOST'),
         'PORT' : os.getenv('PORT'),
+        # 'OPTIONS': {
+        #     'ssl': {
+        #         'ssl-ca': '/etc/ssl/certs/ca-certificates.crt',  # Шлях до SSL сертифікату на вашій системі
+        #     },
+        # },
     }
 }
 
@@ -157,8 +163,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
